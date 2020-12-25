@@ -10,8 +10,11 @@
 
 import React from 'react';
 import { View, StyleSheet, requireNativeComponent } from 'react-native';
+import { Svg, ForeignObject, Mask } from 'react-native-svg';
 
-const RNCMaskedView = requireNativeComponent<any>('RNCMaskedView');
+const RNCMaskedView = requireNativeComponent
+  ? requireNativeComponent<any>('RNCMaskedView')
+  : null;
 
 import { type MaskedViewProps } from './MaskedViewTypes';
 
@@ -60,7 +63,7 @@ export default class MaskedView extends React.Component<MaskedViewProps> {
 
     if (!React.isValidElement(maskElement)) {
       if (!this._hasWarnedInvalidRenderMask) {
-        console.warn(
+        console.error(
           'MaskedView: Invalid `maskElement` prop was passed to MaskedView. ' +
             'Expected a React Element. No mask will render.',
         );
@@ -70,13 +73,46 @@ export default class MaskedView extends React.Component<MaskedViewProps> {
       return <View {...otherViewProps}>{children}</View>;
     }
 
+    if (RNCMaskedView) {
+      return (
+        <RNCMaskedView {...otherViewProps}>
+          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+            {maskElement}
+          </View>
+          {children}
+        </RNCMaskedView>
+      );
+    }
+
+    //We mask it to svg
     return (
-      <RNCMaskedView {...otherViewProps}>
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          {maskElement}
-        </View>
-        {children}
-      </RNCMaskedView>
+      <View
+        {...otherViewProps}
+        style={[
+          otherViewProps.style,
+          { flex: 1, width: '100%', backgroundColor: 'red' },
+        ]}
+      >
+        <Svg style={{ flex: 1, width: '100%', backgroundColor: 'blue' }}>
+          <Mask id="mask" style={{ flex: 1, width: '100%', height: '100%' }}>
+            <ForeignObject style={{ flex: 1, width: '100%', height: '100%' }}>
+              {maskElement}
+            </ForeignObject>
+          </Mask>
+          <ForeignObject
+            mask="url(#mask)"
+            style={{
+              flex: 1,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'red',
+              overflowY: 'auto',
+            }}
+          >
+            {children}
+          </ForeignObject>
+        </Svg>
+      </View>
     );
   }
 }
