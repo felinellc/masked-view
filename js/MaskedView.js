@@ -16,8 +16,6 @@ const RNCMaskedView = requireNativeComponent
   ? requireNativeComponent<any>('RNCMaskedView')
   : null;
 
-import type { MaskedViewProps } from './MaskedViewTypes';
-
 /**
  * Renders the child view with a mask specified in the `maskElement` prop.
  *
@@ -55,7 +53,7 @@ import type { MaskedViewProps } from './MaskedViewTypes';
  * transparent pixels block that content.
  *
  */
-export default class MaskedView extends React.Component<MaskedViewProps> {
+export default class MaskedView extends React.Component {
   _hasWarnedInvalidRenderMask = false;
 
   render() {
